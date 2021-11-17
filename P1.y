@@ -9,11 +9,13 @@
 
    typedef struct place{
       char *nombre;
+      char *nombreC;
       int token;
       struct ArcoT* next;          
    }place;
    typedef struct trans{
       char *nombre;
+      char *nombreC;
       struct ArcoP* next;            
    }trans;
    typedef struct ArcoP{
@@ -31,9 +33,15 @@
       place* P;
       struct Elementos* next;
    }Elementos;
+   typedef struct Arcos{
+      ArcoP* AP;
+      ArcoT* AT;
+      struct Arcos* next;
+   }Arcos;
 
-   
+   Arcos arcos;
    Elementos elementos;
+   //--------------------[[[COMPROBAR]]] -------------------
    bool verificarElemento(){
       if(elementos.P== NULL && elementos.T ==NULL){
          return false;         
@@ -81,6 +89,35 @@
          return false;
       }      
    }
+   bool existenPlace(char *nombre1, char *nombre2){
+      int cond1=0,cond2=0;
+      Elementos* puntero;
+      puntero = &elementos;
+      
+      if(puntero->next==NULL){
+         return false;
+      }else{
+         while(puntero!=NULL){            
+            if(puntero->P!=NULL){
+               
+               if(puntero->P->nombre[1]==nombre1[1]){
+                  
+                  cond1=1;
+               }else if(puntero->P->nombre[1]==nombre2[1]){
+                  cond2=1;
+               }
+            }
+            puntero = puntero->next;
+         }
+      }
+      if(cond1==1 && cond2==1){
+         
+         return true;
+      }else{
+         
+         return false;
+      }      
+   }
    Elementos* Encontrar(char *nombre){
       Elementos* puntero;
       puntero = &elementos;
@@ -107,8 +144,10 @@
       }
       return NULL;
    }
+   // ---------------------------------------------------------
+   // ----------------[[[CREAR Y ENLAZAR]]]---------------------
 
-   void crearTrans(char *nombre){
+   void crearTrans(char *nombreC ,char *nombre){
       Elementos* puntero;
       puntero = &elementos;
       Elementos* busqueda = Encontrar(nombre);
@@ -121,7 +160,8 @@
          puntero->next = e;
       }else{
          trans* T = (trans *)malloc(sizeof(trans));
-         T->nombre=nombre;   
+         T->nombre=nombre; 
+         T->nombreC=nombreC;  
          Elementos* e = (Elementos *)malloc(sizeof(Elementos));
          e->T=T;   
          if(elementos.next==NULL){         
@@ -135,7 +175,7 @@
       }
    }
    
-   void crearPlace(char *nombre, int token){
+   void crearPlace(char *nombreC ,char *nombre, int token){
       Elementos* puntero;
       puntero = &elementos;
       Elementos* busqueda = Encontrar(nombre);
@@ -149,6 +189,7 @@
       }else{
          place* P = (place *)malloc(sizeof(place));
          P->nombre=nombre;
+         P->nombreC=nombreC;
          P->token=token;
          if(nombre[1]=='1'){
             if(!verificarElemento()){
@@ -185,7 +226,9 @@
       if(!existen(nombreP,nombreT)){
          printf("No es posible Conectar, algun elemento no existe.\n");
       }else{     
-         int cont=0;    
+         int cont=0;  
+         Arcos* punteroA;
+         punteroA = &arcos;  
          Elementos* edP = Encontrar(nombreP);
          Elementos* edT = Encontrar(nombreT);
          ArcoT* arcT = (ArcoT *)malloc(sizeof(ArcoT));
@@ -193,6 +236,14 @@
          arcT->peso=peso;
          if(edP->P->next==NULL){            
             edP->P->next=arcT;
+            /*if(punteroA->AP==NULL && punteroA->AT==NULL){
+                  punteroA->AT = arcT;
+            }else{
+                  while(punteroA->next){
+                     punteroA = punteroA->next;
+                  }
+                  punteroA->next->AT = arcT;
+               }  */                            
          }else{
             ArcoT* puntero;
             puntero = edP->P->next;            
@@ -205,6 +256,14 @@
             if(cont!=0 || puntero->T->nombre[1]==nombreT[1]){
                printf("Arco no creado, ya existe!\n");
             }else{
+               /*if(punteroA->AP==NULL && punteroA->AT==NULL){
+                  punteroA->AT = arcT;
+               }else{
+                  while(punteroA->next){
+                     punteroA = punteroA->next;
+                  }
+                  punteroA->next->AT = arcT;
+               }   */                           
                puntero->next = arcT;               
             }
             
@@ -217,6 +276,8 @@
          printf("No es posible Conectar, algun elemento no existe.\n");
       }else{
          int cont=0;
+         Arcos* punteroA;
+         punteroA = &arcos;
          Elementos* edP = Encontrar(nombreP);
          Elementos* edT = Encontrar(nombreT);
          ArcoP* arcP = (ArcoP *)malloc(sizeof(ArcoP));
@@ -224,6 +285,14 @@
          arcP->peso=peso;
          if(edT->T->next==NULL){            
             edT->T->next=arcP;
+            /*if(punteroA->AP==NULL && punteroA->AT==NULL){
+                  punteroA->AP = arcP;
+               }else{
+                  while(punteroA->next){
+                     punteroA = punteroA->next;
+                  }
+                  punteroA->next->AP = arcP;
+               }*/                              
          }else{
             ArcoP* puntero;
             puntero = edT->T->next;
@@ -236,6 +305,14 @@
             if(cont!=0 || puntero->P->nombre[1]==nombreP[1]){
                printf("Arco no creado, ya existe!\n");
             }else{
+              /* if(punteroA->AP==NULL && punteroA->AT==NULL){
+                  punteroA->AP = arcP;
+               }else{
+                  while(punteroA->next){
+                     punteroA = punteroA->next;
+                  }
+                  punteroA->next->AP = arcP;
+               }*/
                puntero->next= arcP;
             }
             
@@ -245,47 +322,141 @@
    void conexionFail(char *nombre1,char *nombre2){
       printf("No puede conectar %s -> %s \n",nombre1,nombre2);
    }
+// -----------------------------------------------------------
+// ----------------- [[[MOSTRAR REDES]]] ---------------------
 
-
-
-   void ejemplo(){
-      /*Elementos* puntero;
+/*void mostrarCamino(char *nombre1, char *nombre2){
+   if(!existenPlace(nombre1,nombre2)){
+      printf("No existe camino, Place(s) inexistente(s)\n");
+   }else{
+      Arcos* PA;
+      char *temp;
+      PA = &arcos;
+      Elementos* puntero;
       puntero = &elementos;
-      while(puntero!=NULL){
+
+      
+   }
+}*/
+void mostrarElementos(){
+   Elementos* puntero;
+   puntero = &elementos;
+   while(puntero!=NULL){
+      if(puntero->next!=NULL){
          if(puntero->P!=NULL){
             printf("[%s]->",puntero->P->nombre);
          }else if(puntero->T!=NULL){
             printf("[%s]->",puntero->T->nombre);
          }
          puntero = puntero->next;
-      } */printf("\n");
-       
-      /*trans T={"T1"};
+      }else{
+         if(puntero->P!=NULL){
+            printf("[%s]",puntero->P->nombre);
+         }else if(puntero->T!=NULL){
+            printf("[%s]",puntero->T->nombre);
+         }
+         puntero = puntero->next;
+      }   
       
-      ArcoT A={0,&T};
-      
-      place P = {"P1",0, &A};
-      elementos.P = &P;*/
-      /*crearPlace("P2", 0);
-      crearTrans("T1");
-      crearPlace("P1", 0);
-      
-      
-      crearPlace("P1", 0);
-      if(existen("P1","T1")){
-         printf("Existe!!!\n");
-      }
-      crearTrans("T1");
-      
-     printf("%p\n",elementos.P);
-     printf("%s\n",elementos.next->P->nombre);
-     printf("%s\n",elementos.next->next->T->nombre);
-     printf("%p\n",elementos.next->next->next->P);*/
-
    }
-  
-      
-     
+   printf("\n");
+}
+
+void mostrarEM(){
+   crearPlace(NULL,"P1",1);
+   crearPlace(NULL,"P2",0);
+   crearPlace(NULL,"P3",0);
+   crearPlace(NULL,"P4",0);
+   crearTrans(NULL,"T1");
+   crearTrans(NULL,"T2");
+   crearTrans(NULL,"T3");
+   crearTrans(NULL,"T4");
+   crearTrans(NULL,"T5");
+   crearArcoT(1,"P1","T1");
+   crearArcoT(1,"P1","T2");
+   crearArcoP(1,"P2","T1");
+   crearArcoP(1,"P3","T2");
+   crearArcoT(1,"P2","T3");
+   crearArcoT(1,"P3","T4");
+   crearArcoP(1,"P4","T3");
+   crearArcoP(1,"P4","T4");
+   crearArcoT(1,"P4","T5");
+   crearArcoP(1,"P1","T5");
+
+   printf("|P|->T1->P2->T3->|P|->|T|->|Inicio|\n");
+   printf("|1|->T2->P3->T4->|4|  |5|  |  P1  |\n");
+}
+void mostrarPC(){
+   crearPlace("espera","P1",1);
+   crearPlace("produciendo","P2",0);
+   crearPlace("buffer vacio","P3",0);
+   crearPlace("buffer lleno","P4",0);
+   crearPlace("consumiendo","P5",0);
+   crearPlace("espera","P6",0);
+   crearTrans(NULL,"T1");
+   crearTrans(NULL,"T2");
+   crearTrans(NULL,"T3");
+   crearTrans(NULL,"T4");
+   crearArcoT(1,"P1","T2");
+   crearArcoT(1,"P3","T2");
+   crearArcoT(1,"P5","T4");
+   crearArcoT(1,"P2","T1");
+   crearArcoT(1,"P4","T3");
+   crearArcoT(1,"P6","T3");
+   crearArcoP(1,"P1","T1");
+   crearArcoP(1,"P2","T2");
+   crearArcoP(1,"P4","T2");
+   crearArcoP(1,"P3","T3");
+   crearArcoP(1,"P5","T3");
+   crearArcoP(1,"P6","T4");
+
+   printf(" |->(P1)->||<-(P3)<-||->(P5)->|\n");
+   printf(" |        ||        ||        |\n");
+   printf(" |        vv        ||        v\n");
+   printf("[T1]     [T2]      [T3]      [T4]\n");
+   printf(" |        ||        ||        |\n");
+   printf(" |--(P2)<-||->(P4)--||--(P6)<-|\n");
+
+}
+// ----------------- [[[INSTRUCCIONES]]] ---------------------
+void instrucciones(){
+   printf("Para utilizar el programa por consola puede digitar\n");
+   printf("las siguientes instrucciones escribiendo tal cual se muestran:\n");
+   printf("\n");
+   printf("MOSTRAR RED E/M:\n");
+   printf("    ->Crea y muestra una red de exclusion mutua.\n");
+   printf("MOSTRAR RED P/C:\n");
+   printf("    ->Crea y muestra una red de Productor/Consumidor.\n");
+   printf("MOSTRAR ELEMENTOS:\n");
+   printf("    ->Muestra los Places y Transiciones creadas manualmente.\n");
+   printf("\n");
+   printf("Para crear independientemente Place, Transiciones y Arcos se\n");
+   printf("logra de la siguiente manera(cambiar # por numero de 1-9):\n");
+   printf("\n");
+   printf("PLACE: P#    {para crear place independiente}\n");
+   printf("       P#(#) {dentro del parentesis se agrega un token del 1-9}\n");
+   printf("       P#[nombre](#){corchete va nombre en minusculas, token en parentesis}\n");
+   printf("       P#[nombre]{sin token}\n");
+   printf("\n");
+   printf("TRANSICIONES:   T# {para crear transicion independiente.}\n");
+   printf("                T#[nombre]{crear transicion con nombre}\n");
+   printf("\n");
+   printf("ARCOS: ->(PLACE,TRANSICION){para crear arco conectando 2 elementos ya creados (P#,T#)}\n");
+   printf("                           {ya creados (P#,T#) o (T#,P#).                            }\n");
+   printf("       ->[#](P#,T#){[#] para darle un peso al arco reemplazando # por un numero 1-9}\n");
+   printf("\n");
+   printf("CREAR RED SIMPLE: Conectar puntos como los anteriormente nombrados sin necesidad\n");
+   printf("                  De haberlos creados EJ: P1->T1->P2\n");
+   printf("\n");
+   printf("--------------------------------------------------------------------------------------\n");
+   printf("NOTA: Los places solo pueden tener arcos hacia transiciones y viceversa. Los places y\n");
+   printf("      las transiciones pueden tener mas de un arco. Si existe una conexion entre 2 \n");
+   printf("      puntos el arco no se repetira. Se recomienda ejecutar el programa nuevamente\n");
+   printf("      para visualizar los ejemplos de redes complejas.\n");
+   printf("--------------------------------------------------------------------------------------\n");
+   printf("\n");
+   printf("Si deseas repetir las instrucciones escribe INSTRUCCIONES\n");
+}
   
 
 %} 
@@ -302,6 +473,7 @@
 %token <strVal>ARCO
 %token <strVal>PLACE
 %token <strVal>TRANS
+%token <strVal>NOMBRE
 %type <strVal>ARCOS
 %type <strVal>PLACES
 %type <strVal>TRANSS
@@ -310,6 +482,15 @@
 %token COR
 %token CORC
 %token COMA
+%token INST
+%token MOSTRAR
+%token ELEMENTOS
+%token RED
+%token EM
+%token PC
+%token ESPACIO
+%token CAMINO
+%token VISTA
 
 /* Acciones de produccion */
 %% 
@@ -318,13 +499,14 @@
    ;
 
    Expr: FIN
-      | ARCOS Expr /*pasa a ARCOS para ver si es una red compleja*/    
+      | ARCOS Expr /*pasa a ARCOS para ver si es una red compleja*/  
+      | INSTRUCCION  
       
    ;
-   PLACES: PAR PLACE COR NUM CORC PARC {crearPlace($2,$4);$$=$2;}// (P#[#])
-   | PAR PLACE PARC {crearPlace($2,0);$$=$2;}// (P#)   
-   | PLACE PAR NUM PARC {crearPlace($1,$3);$$=$1;}/* P#(#) -> Se utiliza cuando es solo la creacion de un PLACE independiente*/
-   | PLACE {crearPlace($1,0);$$=$1;}/* P# -> Place independiente sin Token */
+   PLACES: PLACE COR NOMBRE CORC PAR NUM PARC {crearPlace($3,$1,$6);$$=$1;}  // P#[NOMBRE](#)
+   | PLACE PAR NUM PARC {crearPlace(NULL,$1,$3);$$=$1;}/* P#(#) -> Se utiliza cuando es solo la creacion de un PLACE independiente*/
+   | PLACE COR NOMBRE CORC {crearPlace($3,$1,0);$$=$1;} // P#[NOMBRE]
+   | PLACE {crearPlace(NULL,$1,0);$$=$1;}/* P# -> Place independiente sin Token */
    ;
    ARCOS: PLACES {$$=$1;} // -> P
    | TRANSS {$$=$1;} // ->T
@@ -337,11 +519,17 @@
    | ARCO PAR PLACE COMA TRANS PARC {crearArcoT(1,$3,$5);}// ->(P#,T#) 
    | ARCO PAR TRANS COMA PLACE PARC {crearArcoP(1,$5,$3);}// ->(T#,P#)
    ;
-   TRANSS: PAR TRANS PARC {crearTrans($2);$$=$2;}// (T#)
-   | TRANS{crearTrans($1);$$=$1;} // T#
+   TRANSS: TRANS COR NOMBRE CORC {crearTrans($3,$1);$$=$1;}// T#[NOMBRE]
+   | TRANS{crearTrans(NULL,$1);$$=$1;} // T#
    ;
-   
-   FIN: FINLINEA {ejemplo();}
+   INSTRUCCION: INST {instrucciones();}// instrucciones
+   | MOSTRAR ESPACIO ELEMENTOS {mostrarElementos();}// Elementos guardados 
+   | MOSTRAR ESPACIO RED ESPACIO EM {mostrarEM();}// mostrar red exclusion mutua
+   | MOSTRAR ESPACIO RED ESPACIO PC {mostrarPC();}// productor/consumidor
+   | MOSTRAR ESPACIO VISTA // RED creada empezando por Place 1
+   | MOSTRAR ESPACIO CAMINO ESPACIO PAR PLACE COMA PLACE PARC // camino de un place a otro
+   ;
+   FIN: FINLINEA 
    ;
 %% 
 
@@ -354,14 +542,9 @@ int yywrap(){
 }
 
 int main(){   
+   instrucciones();
    printf("Ingrese cosas: ->\n"); 
    
    
-   //sprintf(n, "%d",1);
-   //strcpy(letras,n);
-    
-   //printf("%d\n",verificarElemento());
-   //ejemplo();
-   //printf("%d\n",verificarElemento());
    return (yyparse());
 }
